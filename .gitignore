@@ -29,3 +29,6 @@
 
 # VIM
 *.swp
+
+# Rust
+target/
