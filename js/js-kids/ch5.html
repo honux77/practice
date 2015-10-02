@@ -7,8 +7,10 @@
 <body>
 	<h1>Hello</h1>
 	<p>First Web Page</p>
+	<p id="name">John Doe</p>
 <script>
-var msg="Hello!";
-console.log(msg);
+var name=prompt("What's your name?");
+console.log("Hello, " + name + "!");
+var nametag = document.getElementById('name');
+nametag.innerHTML = "Hello, " + name + "!";
 </script>
-	
