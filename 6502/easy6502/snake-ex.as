@@ -14,10 +14,10 @@ define snakeDirection $02 ; direction (possible values are below)
 define snakeLength    $03 ; snake length, in bytes
 
 ; Directions (each using a separate bit)
-define movingUp      1
-define movingRight   2
-define movingDown    4
-define movingLeft    8
+define movingUp      $01
+define movingRight   $02
+define movingDown    $04
+define movingLeft    $08
 
 ; ASCII values of keys controlling the snake
 define ASCII_w      $77
@@ -30,18 +30,44 @@ define sysRandom    $fe
 define sysLastKey   $ff
 
 jsr init
-jsr loop
+jsr test
+brk
 
 init:
 jsr initSnake
-jsr generateApplePosition
 rts
 
-loop:
-  jsr readKeys
-  jsr checkCollision
-  jsr updateSnake
-  jsr drawApple
-  jsr drawSnake
-  jsr spinWheels
-  jmp loop
+initSnake:
+  lda #movingRight  ;start direction
+  sta snakeDirection
+
+  lda #$04  ;start length (2 segments)
+  sta snakeLength
+
+  lda #$11
+  sta snakeHeadL
+
+  lda #$10
+  sta snakeBodyStart
+
+  lda #$0f
+  sta $14 ; body segment 1
+
+  lda #$04
+  sta snakeHeadH
+  sta $13 ; body segment 1
+  sta $15 ; body segment 2
+  rts
+
+test:
+  lda #$01 ;white
+  ldx #$00
+  sta (snakeHeadL,X)
+  ldx snakeLength
+body:
+  dex
+  dex
+  sta (snakeBodyStart,X)
+  cpx #$00
+  bne body
+  rts
