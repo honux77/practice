@@ -28,3 +28,20 @@ define ASCII_d      $64
 ; System variables
 define sysRandom    $fe
 define sysLastKey   $ff
+
+jsr init
+jsr loop
+
+init:
+jsr initSnake
+jsr generateApplePosition
+rts
+
+loop:
+  jsr readKeys
+  jsr checkCollision
+  jsr updateSnake
+  jsr drawApple
+  jsr drawSnake
+  jsr spinWheels
+  jmp loop
