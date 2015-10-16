@@ -27,7 +27,7 @@ define ASCII_d      $64
 
 ; System variables
 define sysRandom    $fe
-define sysLastKey   $ff
+define sysKey       $ff
 
   jsr init
   jsr loop
@@ -74,10 +74,56 @@ generateApplePosition:
   rts
 
 loop:
+  jsr readKeys
   jsr drawSnake
   jsr drawApple
   jmp loop
 
+  readKeys:
+    lda sysKey
+    cmp #ASCII_w
+    beq upKey
+    cmp #ASCII_d
+    beq rightKey
+    cmp #ASCII_s
+    beq downKey
+    cmp #ASCII_a
+    beq leftKey
+    rts
+  upKey:
+    lda #movingDown
+    bit snakeDirection
+    bne illegalMove
+
+    lda #movingUp
+    sta snakeDirection
+    rts
+  rightKey:
+    lda #movingLeft
+    bit snakeDirection
+    bne illegalMove
+
+    lda #movingRight
+    sta snakeDirection
+    rts
+  downKey:
+    lda #movingUp
+    bit snakeDirection
+    bne illegalMove
+
+    lda #movingDown
+    sta snakeDirection
+    rts
+  leftKey:
+    lda #movingRight
+    bit snakeDirection
+    bne illegalMove
+
+    lda #movingLeft
+    sta snakeDirection
+    rts
+  illegalMove:
+    rts
 
 drawSnake:
   ldx snakeLength
