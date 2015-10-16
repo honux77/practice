@@ -29,13 +29,14 @@ define ASCII_d      $64
 define sysRandom    $fe
 define sysLastKey   $ff
 
-jsr init
-jsr test
-brk
+  jsr init
+  jsr loop
+  brk
 
 init:
-jsr initSnake
-rts
+  jsr initSnake
+  jsr generateApplePosition
+  rts
 
 initSnake:
   lda #movingRight  ;start direction
@@ -59,15 +60,37 @@ initSnake:
   sta $15 ; body segment 2
   rts
 
-test:
-  lda #$01 ;white
-  ldx #$00
-  sta (snakeHeadL,X)
+generateApplePosition:
+  ;load a new random byte into $00
+  lda sysRandom
+  sta appleL
+
+  ;load a new random number from 2 to 5 into $01
+  lda sysRandom
+  and #$03 ;mask out lowest 2 bits
+  clc
+  adc #2
+  sta appleH
+  rts
+
+loop:
+  jsr drawSnake
+  jsr drawApple
+  jmp loop
+
+
+drawSnake:
   ldx snakeLength
-body:
-  dex
-  dex
-  sta (snakeBodyStart,X)
-  cpx #$00
-  bne body
+  lda #0
+  sta (snakeHeadL,x) ; erase end of tail
+
+  ldx #0
+  lda #1
+  sta (snakeHeadL,x) ; paint head
+  rts
+
+drawApple:
+  ldy #0
+  lda sysRandom
+  sta (appleL),y
   rts
