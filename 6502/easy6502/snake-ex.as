@@ -75,6 +75,8 @@ generateApplePosition:
 
 loop:
   jsr readKeys
+  jsr checkCollision
+  jsr updateSnake
   jsr drawSnake
   jsr drawApple
   jmp loop
@@ -124,6 +126,51 @@ loop:
     rts
   illegalMove:
     rts
+
+checkCollision:
+  jsr checkAppleCollision
+  jsr checkSnakeCollision
+  rts
+
+
+checkAppleCollision:
+  lda appleL
+  cmp snakeHeadL
+  bne doneCheckingAppleCollision
+  lda appleH
+  cmp snakeHeadH
+  bne doneCheckingAppleCollision
+  ;eat apple
+  inc snakeLength
+  inc snakeLength ;increase length
+  jsr generateApplePosition
+  doneCheckingAppleCollision:
+  rts
+
+
+checkSnakeCollision:
+  ldx #2 ;start with second segment
+  snakeCollisionLoop:
+  lda snakeHeadL,x
+  cmp snakeHeadL
+  bne continueCollisionLoop
+
+maybeCollided:
+  lda snakeHeadH,x
+  cmp snakeHeadH
+  beq didCollide
+
+continueCollisionLoop:
+  inx
+  inx
+  cpx snakeLength          ;got to last section with no collision
+  beq didntCollide
+  jmp snakeCollisionLoop
+
+didCollide:
+  jmp gameOver
+  didntCollide:
+  rts
 
 drawSnake:
   ldx snakeLength
