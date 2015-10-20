@@ -250,5 +250,14 @@ drawApple:
   sta (appleL),y
   rts
 
+spinWheels:
+  ldx #0
+spinloop:
+  nop
+  nop
+  dex
+  bne spinloop
+  rts
+
 gameOver:
   rts
