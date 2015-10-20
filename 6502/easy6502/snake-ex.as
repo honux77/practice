@@ -79,53 +79,51 @@ loop:
   jsr updateSnake
   jsr drawSnake
   jsr drawApple
+;  jsr spinWheels
   jmp loop
 
-  readKeys:
-    lda sysKey
-    cmp #ASCII_w
-    beq upKey
-    cmp #ASCII_d
-    beq rightKey
-    cmp #ASCII_s
-    beq downKey
-    cmp #ASCII_a
-    beq leftKey
-    rts
-  upKey:
-    lda #movingDown
-    bit snakeDirection
-    bne illegalMove
+readKeys:
+  lda sysKey
+  cmp #ASCII_w
+  beq upKey
+  cmp #ASCII_d
+  beq rightKey
+  cmp #ASCII_s
+  beq downKey
+  cmp #ASCII_a
+  beq leftKey
+  rts
+upKey:
+  lda #movingDown
+  bit snakeDirection
+  bne illegalMove
 
-    lda #movingUp
-    sta snakeDirection
-    rts
-  rightKey:
-    lda #movingLeft
-    bit snakeDirection
-    bne illegalMove
-
-    lda #movingRight
-    sta snakeDirection
-    rts
-  downKey:
-    lda #movingUp
-    bit snakeDirection
-    bne illegalMove
-
-    lda #movingDown
-    sta snakeDirection
-    rts
-  leftKey:
-    lda #movingRight
-    bit snakeDirection
-    bne illegalMove
-
-    lda #movingLeft
-    sta snakeDirection
-    rts
-  illegalMove:
-    rts
+  lda #movingUp
+  sta snakeDirection
+  rts
+rightKey:
+  lda #movingLeft
+  bit snakeDirection
+  bne illegalMove
+  lda #movingRight
+  sta snakeDirection
+  rts
+downKey:
+  lda #movingUp
+  bit snakeDirection
+  bne illegalMove
+  lda #movingDown
+  sta snakeDirection
+  rts
+leftKey:
+  lda #movingRight
+  bit snakeDirection
+  bne illegalMove
+  lda #movingLeft
+  sta snakeDirection
+  rts
+illegalMove:
+  rts
 
 checkCollision:
   jsr checkAppleCollision
@@ -172,6 +170,70 @@ didCollide:
   didntCollide:
   rts
 
+
+updateSnake:
+  ldx snakeLength
+  dex
+  txa
+updateloop:
+  lda snakeHeadL,x
+  sta snakeBodyStart,x
+  dex
+  bpl updateloop
+
+  lda snakeDirection
+  lsr
+  bcs up
+  lsr
+  bcs right
+  lsr
+  bcs down
+  lsr
+  bcs left
+up:
+  lda snakeHeadL
+  sec
+  sbc #$20
+  sta snakeHeadL
+  bcc upup
+  rts
+upup:
+  dec snakeHeadH
+  lda #$1
+  cmp snakeHeadH
+  beq collision
+  rts
+right:
+  inc snakeHeadL
+  lda #$1f
+  bit snakeHeadL
+  beq collision
+  rts
+down:
+  lda snakeHeadL
+  clc
+  adc #$20
+  sta snakeHeadL
+  bcs downdown
+  rts
+downdown:
+  inc snakeHeadH
+  lda #$6
+  cmp snakeHeadH
+  beq collision
+  rts
+left:
+  dec snakeHeadL
+  lda snakeHeadL
+  and #$1f
+  cmp #$1f
+  beq collision
+  rts
+collision:
+  jmp gameOver
+
+
+
 drawSnake:
   ldx snakeLength
   lda #0
@@ -186,4 +248,7 @@ drawApple:
   ldy #0
   lda sysRandom
   sta (appleL),y
+  rts
+
+gameOver:
   rts
