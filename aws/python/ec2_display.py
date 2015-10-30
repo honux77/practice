@@ -53,5 +53,5 @@ def printEc2RunningList(regionName, isAll):
 # Use the filter() method of the instances collection to retrieve
 # all running EC2 instances.
 for regionName in regionList:
-    # printEc2RunningList(regionName,False)
-    terminateEC2Instances('temp', regionName)
+    printEc2RunningList(regionName,False)
+    # terminateEC2Instances('temp', regionName)
