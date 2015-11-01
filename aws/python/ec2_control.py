@@ -8,15 +8,12 @@ for instance in instances:
     tags = instance.tags
     state = instance.state['Name']
     found = False
-    for tag in tags:
-        if tag['Key'] == 'Name':
-            name = tag['Value']
-            if KILLTAG in name:
-                found = True
-                print(name, instance.id, state)
-                # try to kill
-                ret =instance.terminate()
-                print(ret)
-
+    name = (item for item in tags if item['Key'] == 'Name').next()
+    if KILLTAG in name:
+        found = True
+        print(name, instance.id, state)
+        # try to kill
+        ret =instance.terminate()
+        print(ret)
 if not found:
     print("Target instance not found.")
