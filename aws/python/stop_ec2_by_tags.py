@@ -6,6 +6,9 @@ def findInstanceByTag(tag):
     ret=[]
     instances = boto3.resource('ec2').instances.all()
     for instance in instances:
+        if instance.tags is None:
+            ret.append(instance.id)
+            continue
         nametag = (item for item in instance.tags if item['Key'] == 'Name').next()
         name = nametag['Value']
         state = instance.state['Name']
@@ -22,12 +25,14 @@ def stopInstances(ids):
         ret = instance.stop()
         print ret
     
-
 now = str(datetime.now())
-tag = "test"
-
-print now, "] stop instance: ", tag
-
+tags = ["cocoa", "temp"]
+log = "[" + now + "] Stopping instances: " + str(tags)
+print log
 ec2 = boto3.resource('ec2')
-ids = findInstanceByTag(tag)
-stopInstances(ids)
+for tag in tags:
+    ids = findInstanceByTag(tag)
+    if len(ids) !=0:
+        stopInstances(ids)
+    else:
+        print "Can't find", tag, "instances to stop."
