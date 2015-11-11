@@ -1,4 +1,3 @@
-# Boto 3
 import boto3
 regionList=[]
 ec2regions = boto3.client('ec2').describe_regions(); #dict
@@ -19,8 +18,15 @@ def terminateEC2Instances(tag, regionName):
     ec2 = boto3.resource('ec2', regionName)
     instances = ec2.instances.all()
     for instance in instances:
-        name = findNameTag(instance.tags)
         state = instance.state['Name']
+        if instance.tags is None:
+            if not('terminated' == state or 'shutting-down' == state):
+                found = True
+                print("no tags", instance.id, instance.state, "will terminate")
+                ret =instance.terminate()
+            continue
+
+        name = findNameTag(instance.tags)
         if KILLTAG in name:
             found = True
             print(name, instance.id, state)
@@ -45,7 +51,8 @@ def printEc2RunningList(regionName, isAll):
     for instance in instances:
         found = True;
         state = instance.state['Name']
-        print(instance.id, instance.instance_type, state, instance.tags)
+        if not('terminated' == state or 'shutting-down' == state):
+            print(instance.id, instance.instance_type, state, instance.tags)
 
     if not found:
         print("No Instances.")
@@ -53,5 +60,5 @@ def printEc2RunningList(regionName, isAll):
 # Use the filter() method of the instances collection to retrieve
 # all running EC2 instances.
 for regionName in regionList:
-    # printEc2RunningList(regionName,False)
+    printEc2RunningList(regionName,False)
     terminateEC2Instances('temp', regionName)
