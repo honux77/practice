@@ -21,3 +21,19 @@ crontab -r
 
 # generate log file name
 echo "I am some file" > "hoyoung-$(date +'%m-%d-%Y-%H:%M:%S').log"
+
+
+# install cloud-trail
+sudo yum install -y awslogs
+
+:'
+Edit the /etc/awslogs/awscli.conf file and in the [default] section
+region = ap-northeast-1
+aws_access_key_id = <YOUR ACCESS KEY>
+aws_secret_access_key = <YOUR SECRET KEY>
+'
+
+# aws ec2 create name tag
+NAME="temp-new"
+aws ec2 create-tags --resources i-da4094f6
+--tags "Key=Name,Value=$NAME"
