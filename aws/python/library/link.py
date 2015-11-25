@@ -44,8 +44,11 @@ class link(object):
     def getAllEc2Instances(self):
         return self.Ec2.instances.all()
 
-    def printEc2Info(self,Ec2id):
-        instance = self.getInstanceById(Ec2id)
+    def printEc2InfobyId(Ec2id):
+        instance = getInstanceById(Ec2id)
+        print("  +",instance.id, instance.state['Name'], instance.tags)
+
+    def printEc2Info(self, instance):
         print("  +",instance.id, instance.state['Name'], instance.tags)
 
     def getInstanceById(self,id):
@@ -63,7 +66,7 @@ class link(object):
 
     def termitateAllInstancesByTag(self,tag = "temp"):
         for region in self.regionList:
-            terminateEc2Instances(tag, region)
+            self.terminateEc2Instances(tag, region)
 
     def printRunningEc2(self, isRunning=True):
         print("Region:", self.region)
@@ -76,7 +79,7 @@ class link(object):
 
         for instance in instances:
             found = True
-            self.printEc2Info(instance.id)
+            self.printEc2Info(instance)
 
         if not found:
             print("No Instances.")
@@ -87,37 +90,35 @@ class link(object):
             self.changeRegion(region)
             self.printRunningEc2()
 
+    # terminate instance by single tag
+    # it also termiate instances which does not have a tag
+    def terminateEc2Instances(self, tag, region):
+        ec2 = boto3.resource('ec2',region)
+        print("terminate instance in Region:", region)
+        found = False
+        instances = ec2.instances.all()
+        for instance in instances:
+            state = instance.state['Name']
+            if state == 'terminated' or state == 'shutting-down':
+                continue
+            name = self.__findNameTag(instance)
+            if name is None or tag in name:
+                found = True
+                self.printEc2Info(instance)
+                ret = instance.terminate()
+                print(ret)
+                continue
+        if not found:
+            print("Target instance not found.")
+        return found
+
     #private method?
-    def __findNameTag(instance):
+    def __findNameTag(self, instance):
         tags = instance.tags
         if tags is None:
             return None
-        tag = (item for item in tags if tag['Key'] == 'Name').next()
-        name = tag['Value']
-        return name
-
-
-# terminate instance by single tag
-# it also termiate instances which does not have a tag
-def terminateEc2Instances(tag, regionName):
-    print("terminate instance in Region:", regionName)
-    found = False
-    KILLTAG = tag
-    Ec2 = boto3.resource('Ec2', regionName)
-    instances = Ec2.instances.all()
-    for instance in instances:
-        name = __findNameTag(instance.tags)
-        state = instance.state['Name']
-        if KILLTAG in name:
-            found = True
-            print(name, instance.id, state)
-            # try to kill
-            if not('terminated' == state or 'shutting-down' == state):
-                ret =instance.terminate()
-                print(ret)
-    if not found:
-        print("Target instance not found.")
-    return found
+        ret = (item for item in tags if item['Key'] == 'Name').next()
+        return ret['Value']
 
 
 def test1(link):
@@ -140,29 +141,30 @@ def test2(link):
     print('\n== Test2: print all instances in', link.region)
     instances = link.getAllEc2Instances()
     for instance in instances:
-        link.printEc2Info(instance.id)
+        link.printEc2Info(instance)
     print("test2 ok")
 
 def test3(link):
-    print("test3 ok")
-    link.printRunningEc2(True)
+    print("test3: printRunningEc2")
+    print("all")
     link.printRunningEc2(False)
+    print("running")
+    link.printRunningEc2()
     link.changeRegion('ap-southeast-2')
-    link.printRunningEc2(False)
+    link.printRunningEc2()
     link.changeRegion('ap-northeast-1')
     print("test3 ok")
 
 def test4(link):
+    print("test4: print All running ec2")
     link.printAllRunningEc2()
+    print("test4 ok")
+
 
 # test code
 def main():
     me = link()
-    test1(me)
-    test2(me)
-    test3(me)
-    test4(me)
-
+    me.termitateAllInstancesByTag() 
 
 if __name__ == '__main__':
     main()
