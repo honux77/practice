@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Some example page </title>
+</head>
+
+<body id="body">
+	<div id="div1">
+	<h1 id="heading">Lorem Ipsum</h1>
+	<p>Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..</p>
+</div>
+
+	<button id="btn" type="button">transform</button>
+
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script>
+	$("#btn").click(function(){
+		var title="Hello, I Love next!"
+		console.log("Title: " + title);
+		$("#heading").text(title);
+		$("#div1").append("<p>I believe in them. They will be good person!</p>");
+	});
+	
+	</script>
+
+</body>
+</html>

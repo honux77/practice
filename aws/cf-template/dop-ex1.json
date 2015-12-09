@@ -1,0 +1,913 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "DevOps Engineering on AWS v1.2, Lab 1 - Configuring DevOps Roles on AWS",
+  "Parameters": {
+    "DevVPCCIDR": {
+      "Description": "CIDR Block for Developer VPC",
+      "Type": "String",
+      "Default": "10.0.0.0/16",
+      "AllowedValues": ["10.0.0.0/16"]
+    },
+    "DevPublicSubnetCIDR": {
+      "Description": "DevEnv Public Subnet",
+      "Type": "String",
+      "Default": "10.0.10.0/24",
+      "AllowedValues": ["10.0.10.0/24"]
+    },
+    "DevPrivateSubnetCIDR": {
+      "Description": "DevEnv Private Subnet",
+      "Type": "String",
+      "Default": "10.0.15.0/24",
+      "AllowedValues": ["10.0.15.0/24"]
+    },
+    "ProdVPCCIDR": {
+      "Description": "CIDR Block for Production VPC",
+      "Type": "String",
+      "Default": "10.1.0.0/16",
+      "AllowedValues": ["10.1.0.0/16"]
+    },
+    "ProdPublicSubnetCIDR": {
+      "Description": "ProdEnv Public Subnet",
+      "Type": "String",
+      "Default": "10.1.10.0/24",
+      "AllowedValues": ["10.1.10.0/24"]
+    },
+    "ProdPrivateSubnetCIDR": {
+      "Description": "ProdEnv Private Subnet",
+      "Type": "String",
+      "Default": "10.1.15.0/24",
+      "AllowedValues": ["10.1.15.0/24"]
+    },
+    "KeyName": {
+      "Type": "String",
+      "Description": "Keyname for the keypair that Qwiklab will use to launch EC2 instances",
+      "Default": "default-lab-key"
+    },
+    "AWSAmiId" : {
+      "Description" : "The name of the Windows AMI to find based on search",
+      "Type" : "String",
+      "Default" : "x86_64,Windows_Server-2012-R2_RTM-English-64Bit-Base"
+    }
+  },
+  "Mappings" : {
+	"AmazonLinuxAMI": {
+      "us-east-1": {
+        "AMI": "ami-1ecae776"
+      },
+      "us-west-1": {
+        "AMI": "ami-d114f295"
+      },
+      "us-west-2": {
+        "AMI": "ami-e7527ed7"
+      },
+      "eu-west-1": {
+        "AMI": "ami-a10897d6"
+      },
+      "eu-central-1": {
+        "AMI": "ami-a8221fb5"
+      },
+      "sa-east-1": {
+        "AMI": "ami-b52890a8"
+      },
+      "ap-southeast-1": {
+        "AMI": "ami-68d8e93a"
+      },
+      "ap-southeast-2": {
+        "AMI": "ami-fd9cecc7"
+      },
+      "ap-northeast-1": {
+        "AMI": "ami-cbf90ecb"
+      }
+	}
+  },
+  "Resources": {
+    "DevVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "DevVPCCIDR"
+        },
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "Tags": [
+          {
+            "Key": "VPC",
+            "Value": "Development VPC"
+          },
+          {
+            "Key": "Name",
+            "Value": "Development VPC"
+          }
+        ]
+      }
+    },
+    "DevInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": "DevVPC"
+    },
+    "DevAttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "DependsOn": ["DevVPC", "DevInternetGateway"],
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "InternetGatewayId": {"Ref": "DevInternetGateway"}
+      }
+    },
+    "DevPublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "DevAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "CidrBlock": {"Ref": "DevPublicSubnetCIDR"},
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Dev Public Subnet"
+          }
+        ]
+      }
+    },
+    "DevPrivateSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "DevAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "CidrBlock": {"Ref": "DevPrivateSubnetCIDR"},
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Dev Private Subnet"
+          }
+        ]
+      }
+    },
+    "DevPublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": ["DevVPC", "DevAttachGateway"],
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Dev Public Route Table"
+          }
+        ]
+      }
+    },
+    "DevPublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": ["DevPublicRouteTable", "DevAttachGateway"],
+      "Properties": {
+        "RouteTableId": {"Ref": "DevPublicRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "DevInternetGateway"}
+      }
+    },
+    "DevPublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": ["DevPublicRouteTable", "DevPublicSubnet", "DevAttachGateway"],
+      "Properties": {
+        "SubnetId": {"Ref": "DevPublicSubnet"},
+        "RouteTableId": {"Ref": "DevPublicRouteTable"}
+      }
+    },
+    "DevPrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": "DevAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Dev Private Route Table"
+          }
+        ]
+      }
+    },
+    "DevPrivateSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": ["DevPublicRouteTable", "DevPrivateSubnet", "DevAttachGateway"],
+      "Properties": {
+        "SubnetId": {"Ref": "DevPrivateSubnet"},
+        "RouteTableId": {"Ref": "DevPrivateRouteTable"}
+      }
+    },
+    "DevPrivateNetworkAcl": {
+      "Type": "AWS::EC2::NetworkAcl",
+      "DependsOn": "DevAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "DevVPC"},
+        "Tags": [
+          {
+            "Key": "Network",
+            "Value": "Dev Private NACL"
+          }
+        ]
+      }
+    },
+    "DevNATInstance": {
+      "Type": "AWS::EC2::Instance",
+      "DependsOn": ["DevAttachGateway", "DevPublicRoute", "DevPublicSubnet"],
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AmazonLinuxAMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "InstanceType": "t2.small",
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": "0",
+            "AssociatePublicIpAddress": "true",
+            "SubnetId": {
+              "Ref": "DevPublicSubnet"
+            },
+            "GroupSet": [{"Ref": "DevNATSecurityGroup"}]
+          }
+        ],
+        "SourceDestCheck": "false",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "NAT (Development VPC)"
+          },
+                {
+                  "Key": "InstanceType",
+                  "Value": "Infrastructure"
+                },
+					{
+							"Key": "DeploymentType",
+							"Value": "Development"
+					}
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "yum -y update",
+                "echo 1 > /proc/sys/net/ipv4/ip_forward",
+                "echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects",
+                "/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE",
+                "/sbin/iptables-save > /etc/sysconfig/iptables",
+                "mkdir -p /etc/sysctl.d/",
+                "cat <<EOF > /etc/sysctl.d/nat.conf",
+                "net.ipv4.ip_forward = 1",
+                "net.ipv4.conf.eth0.send_redirects = 0",
+                "EOF \n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "DevNATSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "DevAttachGateway",
+      "Properties": {
+        "GroupDescription": "Enable internal access to the NAT device",
+        "VpcId": {"Ref": "DevVPC"},
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "1024",
+            "CidrIp": {
+              "Ref": "DevPrivateSubnetCIDR"
+            }
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "0",
+            "ToPort": "1024",
+            "CidrIp": {
+              "Ref": "DevPrivateSubnetCIDR"
+            }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "DevPrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": ["DevNATInstance", "DevPrivateRouteTable"],
+      "Properties": {
+        "RouteTableId": {"Ref": "DevPrivateRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "InstanceId": {"Ref": "DevNATInstance"}
+      }
+    },
+
+    "ProdVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "ProdVPCCIDR"
+        },
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "Tags": [
+          {
+            "Key": "VPC",
+            "Value": "Production VPC"
+          },
+          {
+            "Key": "Name",
+            "Value": "Production VPC"
+          }
+        ]
+      }
+    },
+    "ProdInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": "ProdVPC"
+    },
+    "ProdAttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "DependsOn": ["ProdVPC", "ProdInternetGateway"],
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "InternetGatewayId": {"Ref": "ProdInternetGateway"}
+      }
+    },
+    "ProdPublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "ProdAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "CidrBlock": {"Ref": "ProdPublicSubnetCIDR"},
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Production Public Subnet"
+          }
+        ]
+      }
+    },
+    "ProdPrivateSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "DependsOn": "ProdAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "CidrBlock": {"Ref": "ProdPrivateSubnetCIDR"},
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Production Private Subnet"
+          }
+        ]
+      }
+    },
+    "ProdPublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": ["DevVPC", "ProdAttachGateway"],
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Public Production Route Table"
+          }
+        ]
+      }
+    },
+    "ProdPublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": ["ProdPublicRouteTable", "ProdAttachGateway"],
+      "Properties": {
+        "RouteTableId": {"Ref": "ProdPublicRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "ProdInternetGateway"}
+      }
+    },
+    "ProdPublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": ["ProdPublicRouteTable", "ProdPublicSubnet", "ProdAttachGateway"],
+      "Properties": {
+        "SubnetId": {"Ref": "DevPublicSubnet"},
+        "RouteTableId": {"Ref": "DevPublicRouteTable"}
+      }
+    },
+    "ProdPrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": "ProdAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Production Private Route Table"
+          }
+        ]
+      }
+    },
+    "ProdPrivateSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": ["ProdPublicRouteTable", "ProdPrivateSubnet", "ProdAttachGateway"],
+      "Properties": {
+        "SubnetId": {"Ref": "ProdPrivateSubnet"},
+        "RouteTableId": {"Ref": "ProdPrivateRouteTable"}
+      }
+    },
+    "ProdPrivateNetworkAcl": {
+      "Type": "AWS::EC2::NetworkAcl",
+      "DependsOn": "ProdAttachGateway",
+      "Properties": {
+        "VpcId": {"Ref": "ProdVPC"},
+        "Tags": [
+          {
+            "Key": "Network",
+            "Value": "Production Private NACL"
+          }
+        ]
+      }
+    },
+
+		"ProdNATInstance": {
+      "Type": "AWS::EC2::Instance",
+      "DependsOn": ["ProdAttachGateway", "ProdPublicRoute", "ProdPublicSubnet"],
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AmazonLinuxAMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "InstanceType": "t2.small",
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": "0",
+            "AssociatePublicIpAddress": "true",
+            "SubnetId": {
+              "Ref": "ProdPublicSubnet"
+            },
+            "GroupSet": [{"Ref": "ProdNATSecurityGroup"}]
+          }
+        ],
+        "SourceDestCheck": "false",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "NAT (Production VPC)"
+          },
+					{
+							"Key": "InstanceType",
+							"Value": "Infrastructure"
+					},
+					{
+							"Key": "DeploymentType",
+							"Value": "Production"
+					}
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "yum -y update",
+                "echo 1 > /proc/sys/net/ipv4/ip_forward",
+                "echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects",
+                "/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE",
+                "/sbin/iptables-save > /etc/sysconfig/iptables",
+                "mkdir -p /etc/sysctl.d/",
+                "cat <<EOF > /etc/sysctl.d/nat.conf",
+                "net.ipv4.ip_forward = 1",
+                "net.ipv4.conf.eth0.send_redirects = 0",
+                "EOF \n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "ProdNATSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "DependsOn": "ProdAttachGateway",
+      "Properties": {
+        "GroupDescription": "Enable internal access to the NAT device",
+        "VpcId": {"Ref": "ProdVPC"},
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "1024",
+            "CidrIp": {
+              "Ref": "ProdPrivateSubnetCIDR"
+            }
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "0",
+            "ToPort": "1024",
+            "CidrIp": {
+              "Ref": "ProdPrivateSubnetCIDR"
+            }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "ProdPrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": ["ProdNATInstance", "ProdPrivateRouteTable"],
+      "Properties": {
+        "RouteTableId": {"Ref": "ProdPrivateRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "InstanceId": {"Ref": "ProdNATInstance"}
+      }
+    },
+    "BastionSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "DependsOn": "DevAttachGateway",
+      "Properties" : {
+         "GroupDescription" : "Security Group for bastion",
+         "VpcId" : {"Ref": "DevVPC"},
+         "Tags": [
+                {
+                  "Key": "Name",
+                  "Value": "BastionSecurityGroup"
+                },
+                {
+                  "Key": "InstanceType",
+                  "Value": "Infrastructure"
+                }
+              ],
+         "SecurityGroupEgress": [
+               {
+                    "IpProtocol": "tcp",
+                    "FromPort": "0",
+                    "ToPort": "65535",
+                    "CidrIp": "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol": "udp",
+                    "FromPort": "0",
+                    "ToPort": "65535",
+                    "CidrIp": "0.0.0.0/0"
+                }
+            ],
+            "SecurityGroupIngress": [
+               {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": "0.0.0.0/0"
+                    }
+                  ]
+          }
+        },
+      "RootRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {"Service": ["ec2.amazonaws.com"] },
+              "Action": ["sts:AssumeRole"]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "*",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "RootInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "DependsOn": "RootRole",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{"Ref": "RootRole"} ]
+      }
+    },
+    "BastionWaitHandle01": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "BastionWaitCondition01": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "DevBastionInstance",
+      "Properties": {
+        "Handle": {
+          "Ref": "BastionWaitHandle01"
+        },
+        "Timeout": "1800"
+      }
+    },
+        "DevBastionInstance": {
+            "Type": "AWS::EC2::Instance",
+            "DependsOn": ["RootInstanceProfile", "DevPublicSubnet", "BastionSecurityGroup", "DevAttachGateway"],
+            "Properties": {
+                "KeyName": {"Ref": "KeyName"},
+                "IamInstanceProfile": {"Ref": "RootInstanceProfile"},
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AmazonLinuxAMI",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "InstanceType": "t2.medium",
+                "NetworkInterfaces": [
+                    {
+                        "DeviceIndex": "0",
+                        "AssociatePublicIpAddress": "true",
+                        "SubnetId": { "Ref": "DevPublicSubnet" },
+                        "GroupSet": [{ "Ref": "BastionSecurityGroup" }]
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Bastion Host (Development VPC)"
+                    },
+                    {
+                        "Key": "InstanceType",
+                        "Value": "Infrastructure"
+                    },
+										{
+												"Key": "DeploymentType",
+												"Value": "Development"
+										}
+								],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -ex \n",
+                                "yum -y update \n",
+                                "mkdir /home/ec2-user/.aws \n",
+                                "cat > /home/ec2-user/.aws/config <<EOF\n",
+                                "[default]\n",
+                                "region = ", { "Ref" : "AWS::Region" }, "\n",
+                                "EOF\n",
+                                "chown -R ec2-user:ec2-user /home/ec2-user/.aws\n",
+                                "/opt/aws/bin/cfn-signal -s true '", {"Ref": "BastionWaitHandle01"} ,"'\n"
+
+                            ]
+                        ]
+                    }
+                }
+        }
+    },
+    "WindowsBastionWaitHandle01": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "WindowsBastionWaitCondition01": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "WindowsDevBastionInstance",
+      "Properties": {
+        "Handle": {
+          "Ref": "WindowsBastionWaitHandle01"
+        },
+        "Timeout": "1800"
+      }
+    },
+    "WindowsBastionSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "DependsOn": "DevAttachGateway",
+      "Properties" : {
+         "GroupDescription" : "Security Group for bastion",
+         "VpcId" : {"Ref": "DevVPC"},
+         "Tags": [
+                {
+                  "Key": "Name",
+                  "Value": "BastionSecurityGroup"
+                },
+                {
+                  "Key": "InstanceType",
+                  "Value": "Infrastructure"
+                }
+              ],
+         "SecurityGroupEgress": [
+               {
+                    "IpProtocol": "tcp",
+                    "FromPort": "0",
+                    "ToPort": "65535",
+                    "CidrIp": "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol": "udp",
+                    "FromPort": "0",
+                    "ToPort": "65535",
+                    "CidrIp": "0.0.0.0/0"
+                }
+            ],
+            "SecurityGroupIngress": [
+               {
+                    "IpProtocol": "tcp",
+                    "FromPort": "3389",
+                    "ToPort": "3389",
+                    "CidrIp": "0.0.0.0/0"
+                    }
+                  ]
+          }
+        },
+    "WindowsDevBastionInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "DependsOn": ["RootInstanceProfile", "DevPublicSubnet", "BastionSecurityGroup", "DevAttachGateway"],
+      "Properties" : {
+        "KeyName" : {
+          "Ref" : "KeyName"
+        },
+        "IamInstanceProfile" : {
+          "Ref" : "RootInstanceProfile"
+        },
+        "ImageId" : {
+          "Ref" : "AWSAmiId"
+        },
+        "InstanceType" : "t2.medium",
+        "NetworkInterfaces": [
+            {
+                "DeviceIndex": "0",
+                "AssociatePublicIpAddress": "true",
+                "SubnetId": { "Ref": "DevPublicSubnet" },
+                "GroupSet": [{ "Ref": "WindowsBastionSecurityGroup" }]
+            }
+        ],
+        "Tags" : [{
+            "Key" : "Name",
+            "Value" : "Windows Bastion Host (Development VPC)"
+          }
+        ],
+        "UserData" : {
+          "Fn::Base64" : {
+            "Fn::Join" : [
+              "",
+              [
+                "<powershell>\n",
+                "Set-ExecutionPolicy Unrestricted -Force\n",
+                "# Download and install latest stable AWS CLI MSI for 64bit\n",
+                "New-Item -ItemType directory -Path 'C:\\temp', 'C:\\temp\\aws'\n",
+                "$webclient = New-Object System.Net.WebClient\n",
+                "$webclient.DownloadFile('https://s3.amazonaws.com/aws-cli/AWSCLI64.msi','C:\\temp\\aws\\AWSCLI64.msi')\n",
+                "Start-Process 'C:\\temp\\aws\\AWSCLI64.msi' -ArgumentList /qn -Wait\n",
+                "New-Item -ItemType directory -Path 'C:\\Users\\Administrator\\.aws'\n",
+                "$ConfigSet = @\"\r\n",
+                "[default]\r\n",
+                "region = ", {
+                  "Ref" : "AWS::Region"
+                }, "\n",
+                "\"@\r\n",
+                "New-Item -ItemType file -Path 'C:\\Users\\Administrator\\.aws\\config' -Value $ConfigSet\n",
+                "cfn-signal.exe -s true '", {
+                  "Ref" : "WindowsBastionWaitHandle01"
+                }, "'\n",
+                "</powershell>\n"
+
+              ]
+            ]
+          }
+        }
+      }
+    }
+},
+  "Outputs": {
+		"Lab1ProdVPC" : {
+			"Value": { "Ref" : "ProdVPC" }
+		},
+		"Lab1DevVPC" : {
+			"Value" : { "Ref" : "DevVPC" }
+		},
+		"Lab1ProdSubnetID" : {
+			"Value" : { "Ref" : "ProdPrivateSubnet" }
+		},
+		"Lab1DevSubnetID" : {
+			"Value" : { "Ref" : "DevPrivateSubnet" }
+		},
+		"Lab1Region" : {
+			"Value" : { "Ref" : "AWS::Region" }
+		},
+		"Lab1AccountID" : {
+			"Value" : { "Ref" : "AWS::AccountId" }
+		},
+		"Lab1ProdNATID" : {
+			"Value" : { "Ref" : "ProdNATInstance" }
+		},
+		"Lab1DevNATID" : {
+			"Value" : { "Ref" : "DevNATInstance" }
+		},
+		"Lab1AMIID" : {
+			"Value" :
+			    {"Fn::FindInMap": [
+						"AmazonLinuxAMI",
+						{
+								"Ref": "AWS::Region"
+						},
+						"AMI"
+						]
+					}
+		},
+    "qwikLAB": {
+      "Description": "Outputs to be used by qwikLAB",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "{",
+              "\"Connection\": \"ssh ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "DevBastionInstance",
+                "PublicIp"
+              ]
+            },
+            "\"}"
+          ]
+        ]
+      }
+    }
+  }
+}
