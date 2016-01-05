@@ -1,0 +1,1 @@
+C:\Users\hoyoungj\github\practice\aws\cs\aws_test\aws_test\aws_test\bin\Debug\aws_test.exe.config

@@ -1,0 +1,15 @@
+{
+  "Id": "Policy1451967670771",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1451967669569",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::demo.watple.com/*",
+      "Principal": "*"
+    }
+  ]
+}

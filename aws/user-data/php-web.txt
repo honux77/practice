@@ -1,0 +1,7 @@
+#!/bin/sh
+yum -y install httpd php
+chkconfig httpd on
+/etc/init.d/httpd start
+cd /var/www/html
+wget https://d2lrzjb0vjvpn5.cloudfront.net/tech-essentials/v3.8/lab-3-elb/static/ec2-info.zip
+unzip ec2-info.zip
