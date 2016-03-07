@@ -1,0 +1,2 @@
+double x = x + x
+
