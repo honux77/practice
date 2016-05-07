@@ -5,6 +5,6 @@ function read(filename) {
 	return ret;
 }
 
-var data = read("./html.js");
+var data = read("./read.js");
 console.log(data);
 exports.read = read;
