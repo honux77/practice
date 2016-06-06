@@ -1,0 +1,4 @@
+# hash = Hash.new
+hash = {}
+
+
