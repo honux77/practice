@@ -32,3 +32,6 @@
 
 # Rust
 target/
+
+# Node
+node_moudules/
