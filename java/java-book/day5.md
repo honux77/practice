@@ -2,9 +2,31 @@
 
 ========
 
-### pp.283 - pp.314
+### pp.318 - pp.336
 
-#### super()
+#### Object
+
+* 모든 클래스들의 조상
+* 제공 메소드 
+```java
+clone()
+equals()
+finalize()
+getClass()
+hashCode()
+toString()
+
+
+notify()
+notifyAll()
+wait()
+```
+
+#### toString()
+= getClass().getName() + '@' + Integer.toHexString(hashCode())
+
+#### equals()
+equals()를 overriding 할 때는 반드시 hashcode()도overriding 해야 한다. 
 
 * 서브클래스의 생성자를 호출하면 자동으로 부모클래스의 매개변수 없는 생성자를 호출한다.
 
