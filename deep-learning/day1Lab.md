@@ -4,35 +4,19 @@
 
 ### https://hunkim.github.io/ml/
 
-#### install guide 
+#### Lab 1 
 
-* https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#pip-installation
+* https://youtu.be/BS6O0zOGX4E
 
-```bash
-# install guide for macos
-# python3, macox with CPU, virtualenv
+* TensorFlow: 파이썬으로 개발할 수 있는 오픈소스 머신러닝 툴
 
-# install pip and virtualenv
-# Mac OS X
-$ sudo easy_install pip
-$ sudo easy_install --upgrade six
-$ sudo pip install --upgrade virtualenv
+* Data Flow Graph: 그래프 자료구조를 이용 데이터를 표현 
+	* 노드: 수학 연산자 (덧셈, 뺄셈)
+	
+	* 엣지: 다차원 데이터 배열 = tensor
 
-# create virtual env directory
-$ virtualenv --system-site-packages ~/tensorflow
+	* 병렬 연산을 하기 쉬움 = GPU 활용이 쉽다! 
 
-# activate environment
-# actually, my shell is zsh but it seems to work well
-$ source ~/tensorflow/bin/activate  # If using bash
-
-# install tensorflow
-# Mac OS X, CPU only, Python 3.4 or 3.5:
-# Python 3
-(tensorflow)$ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-0.11.0rc1-py3-none-any.whl
-(tensorflow)$ pip3 install --upgrade $TF_BINARY_URL
-```
-
-Introduction이고 큰 내용은 없다. 
 
 
 #### Lecture 2
