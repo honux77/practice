@@ -4,20 +4,9 @@
 
 ### https://hunkim.github.io/ml/
 
-#### Lab 1 
+#### Lecture 1 
 
-* https://youtu.be/BS6O0zOGX4E
-
-* TensorFlow: 파이썬으로 개발할 수 있는 오픈소스 머신러닝 툴
-
-* Data Flow Graph: 그래프 자료구조를 이용 데이터를 표현 
-	* 노드: 수학 연산자 (덧셈, 뺄셈)
-	
-	* 엣지: 다차원 데이터 배열 = tensor
-
-	* 병렬 연산을 하기 쉬움 = GPU 활용이 쉽다! 
-
-
+* Introduction, 별 내용은 없다. 
 
 #### Lecture 2
 
@@ -37,7 +26,7 @@
 * 학습을 통해 X(test)의 값을 추정할 수 있다. 
 * 알파고의 경우 기존의 기보가 트레이닝 셋이라고 할 수 있음 
 
-#### Supervised Learning 의 종류 
+##### Supervised Learning 의 종류 
 * Regression: 다양한 범위의 값을 가짐 (ex: 0 ~ 100) 
 * binary classfication: T / F 
 * multi-label classification: 몇 가지 값을 가짐 (A, B, C, F)
