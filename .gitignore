@@ -32,3 +32,9 @@
 
 # Rust
 target/
+
+#intellij
+.idea/
+
+#python
+__pycache__/
