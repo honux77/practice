@@ -1,0 +1,15 @@
+{
+  "name": "stopinator",
+  "version": "0.0.1",
+  "description": "",
+  "main": "stopinator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.0.0-rc.6",
+    "aws-sdk": "^2.3.19"
+  }
+}

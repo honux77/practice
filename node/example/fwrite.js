@@ -2,6 +2,7 @@ var fs = require('fs');
 var process = require('process');
 process.stdin.setEncoding('utf8');
 
+//enter ctrl +d to end
 process.stdin.on('readable', () => {
 	console.log("Enter some string: ");
 	var cmd = process.stdin.read();

@@ -26,7 +26,6 @@
 *.class
 .DS_Store
 
-
 # VIM
 *.swp
 
@@ -38,3 +37,6 @@ target/
 
 #python
 __pycache__/
+
+# Node
+node_moudules/

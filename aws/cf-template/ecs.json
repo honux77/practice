@@ -1,0 +1,589 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Bootcamp Lab 1 CFN template- VPC with two public subnets, an ELB, and an ASG. Launch Config spins up ECS instances",
+    "Parameters": {
+        "VPCCIDR": {
+            "Description": "CIDR Block for VPC",
+            "Type": "String",
+            "Default": "10.5.0.0/16",
+            "AllowedValues": [
+                "10.5.0.0/16"
+            ]
+        },
+        "PublicSubnet1Param": {
+            "Description": "Public Subnet 1",
+            "Type": "String",
+            "Default": "10.5.10.0/24",
+            "AllowedValues": [
+                "10.5.10.0/24"
+            ]
+        },
+        "PublicSubnet2Param": {
+            "Description": "Public Subnet 2",
+            "Type": "String",
+            "Default": "10.5.15.0/24",
+            "AllowedValues": [
+                "10.5.15.0/24"
+            ]
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Keyname for the keypair that Qwiklab will use to launch EC2 instances",
+            "Default": "default-lab-key"
+        },
+        "LabUrlPrefix": {
+            "Type": "String",
+            "Default": "https://s3-us-west-1.amazonaws.com/us-west-1-aws-training/bootcamp/container-microsvc"
+        },
+        "EcsInstanceType": {
+            "Type": "String",
+            "Description": "ECS instance type",
+            "Default": "t2.medium",
+            "AllowedValues": [
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large"
+            ],
+            "ConstraintDescription": "must be a valid T2 EC2 instance type."
+        }
+    },
+    "Mappings": {
+        "AmazonLinuxECSAMI": {
+            "us-east-1": {
+                "AMI": "ami-8da458e6"
+            },
+            "us-west-2": {
+                "AMI": "ami-db0306eb"
+            },
+            "eu-west-1": {
+                "AMI": "ami-7948320e"
+            },
+            "eu-central-1": {
+               "AMI": "ami-c3253caf"
+            },
+            "us-west-1": {
+                "AMI": "ami-4b44b80f"
+            },
+            "ap-southeast-2": {
+                "AMI": "ami-014f353b"
+            },
+            "ap-northeast-1": {
+                "AMI": "ami-fa12b7fa"
+            },
+            "eu-central-1": {
+                "AMI": "ami-c3253caf"
+            }
+        }
+    },
+    "Resources": {
+        "ElasticLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ],
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": "80",
+                        "InstancePort": "80",
+                        "Protocol": "HTTP"
+                    }
+                ],
+                "HealthCheck": {
+                    "Target": "HTTP:80/",
+                    "HealthyThreshold": "3",
+                    "UnhealthyThreshold": "5",
+                    "Interval": "30",
+                    "Timeout": "5"
+                },
+                "CrossZone": "true",
+                "SecurityGroups": [
+                    {
+                        "Ref": "ElbSecurityGroup"
+                    }
+                ],
+                "ConnectionDrainingPolicy": {
+                    "Enabled": "true",
+                    "Timeout": "60"
+                }
+            }
+        },
+        "EcsInstanceAsg": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": [
+                    {
+                        "Fn::GetAtt": [
+                            "PublicSubnet1",
+                            "AvailabilityZone"
+                        ]
+                    },
+                    {
+                        "Fn::GetAtt": [
+                            "PublicSubnet2",
+                            "AvailabilityZone"
+                        ]
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ],
+                "LaunchConfigurationName": {
+                    "Ref": "EcsInstanceLc"
+                },
+                "MinSize": "1",
+                "MaxSize": "2",
+                "DesiredCapacity": "1",
+                "Tags": [
+                    {
+                        "Key": "Application",
+                        "Value": {
+                            "Ref": "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "ECS Instance",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
+            }
+        },
+        "EcsInstanceLc": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "ConfigCluster": [
+                            "Install"
+                        ]
+                    },
+                    "Install": {
+                        "files": {
+                            "/home/ec2-user/region-config.sh": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "LabUrlPrefix"
+                                            },
+                                            "/lab-1/static/region_config.sh"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000755",
+                                "owner": "ec2-user",
+                                "group": "root"
+                            },
+                            "/home/ec2-user/.aws/config": {
+                                "mode": "000755",
+                                "owner": "ec2-user",
+                                "group": "root",
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[default]\n",
+                                            "region = ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/etc/ecs/ecs.config": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "ECS_CLUSTER=",
+                                            {
+                                                "Ref": "Lab1and2Cluster"
+                                            }
+                                        ]
+                                    ]
+                                },
+                                "mode": "000755",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AmazonLinuxECSAMI",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "EcsInstanceType"
+                },
+                "AssociatePublicIpAddress": "true",
+                "IamInstanceProfile": {
+                    "Ref": "RootInstanceProfile"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "ECSSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "yum update -y\n",
+                                "yum install -y aws-cfn-bootstrap git aws-cli\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/opt/aws/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource EcsInstanceLc ",
+                                "         --configsets ConfigCluster ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "# Signal the status from cfn-init\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource EcsInstanceAsg ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "Lab1and2Cluster": {
+            "Type": "AWS::ECS::Cluster"
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VPCCIDR"
+                },
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "Tags": [
+                    {
+                        "Key": "VPC",
+                        "Value": "ECS"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "Lab VPC"
+                    }
+                ]
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "DependsOn": "VPC"
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "DependsOn": [
+                "VPC",
+                "InternetGateway"
+            ],
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "DependsOn": "AttachGateway",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet1Param"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": ""
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Public Subnet 1"
+                    }
+                ]
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "DependsOn": "AttachGateway",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet2Param"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": ""
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Public Subnet 2"
+                    }
+                ]
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "DependsOn": [
+                "VPC",
+                "AttachGateway"
+            ],
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Public"
+                    }
+                ]
+            }
+        },
+        "PublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": [
+                "PublicRouteTable",
+                "AttachGateway"
+            ],
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicSubnet1RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "DependsOn": [
+                "PublicRouteTable",
+                "PublicSubnet1",
+                "AttachGateway"
+            ],
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "PublicSubnet2RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "DependsOn": [
+                "PublicRouteTable",
+                "PublicSubnet2"
+            ],
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "ElbSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "PELB Security Group",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ElbSG"
+                    }
+                ]
+            }
+        },
+        "ECSSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "DependsOn": "AttachGateway",
+            "Properties": {
+                "GroupDescription": "Security Group for ECSInstance",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ECSSecurityGroup"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "udp",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "RootRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "root",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "*",
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "DependsOn": "RootRole",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "RootRole"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "ElasticLoadBalancer": {
+            "Description": "Name of the Portal service load balancer",
+            "Value": {
+                "Ref": "ElasticLoadBalancer"
+            }
+        },
+        "EcsInstanceAsgName": {
+            "Description": "Auto Scaling Group Name for ECS Instances",
+            "Value": {
+                "Ref": "EcsInstanceAsg"
+            }
+        },
+        "EcsClusterName": {
+            "Description": "Name of the ECS cluster",
+            "Value": {
+                "Ref": "Lab1and2Cluster"
+            }
+        }
+    }
+}
