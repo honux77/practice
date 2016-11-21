@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+import datetime
 import urllib.request
 import boto3
 from bs4 import BeautifulSoup
@@ -26,11 +28,10 @@ for article in parent_body: # body -> parent_body
         title = sub
     else:
         title = title.text
-    
-    print("title: "+title)
-    print("link: "+link)
-    print("sub: " + sub)
     articles.append({'title': title, 'link': link, 'sub': sub})
+    # print("title: "+title)
+    # print("link: "+link)
+    # print("sub: " + sub)
 
 dynamo = boto3.resource('dynamodb', region_name='ap-northeast-2')
 table = dynamo.Table('cs_blog')
@@ -42,3 +43,6 @@ for item in articles:
             'link' : item['link'],
             'sub' : item['sub']
             })
+
+print(str(datetime.date.today()) + " crawl blog finished")
+
