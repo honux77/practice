@@ -6,14 +6,16 @@ var myArr = [
 {"id" : 4, "name" : "crong", "content" : "코드스쿼드가 정말 좋은 곳일까? 믿을 수가 없다..", "like" : 0, "comment" : ["누가 그러디"]}
 ];
 
-var objSameId = function(element ,index ,array){
-	if(array[index].id === this.index)
+var objSameId = function(removeId, element ,index ,array){
+	if(array[index].id === removeId)
 		array.splice(index, 1);
 };
-var removeContent = function(oldArr,index){
+
+var removeContent = function(oldArr,removeId){
 	this.index = index;
-	myArr.forEach(objSameId)
+	myArr.forEach(objSameId.bind(null, removeId));
 };
+
 removeContent(myArr,23);
 removeContent(myArr,55);
 removeContent(myArr,93);
