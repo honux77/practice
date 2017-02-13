@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--Import Google Icon Font-->
+  <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--Import materialize.css-->
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+
+
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+  ::-webkit-scrollbar {
+    display:none;
+  }
+  .collection { cursor: pointer;}
+  </style>
+</head>
+
+<body>
+  <div class="row">
+    <div class="col s3" style="padding:0; margin:0; overflow-y:auto; overflow-x:hidden; height:1080px; -ms-overflow-style: none;">
+      <!-- Grey navigation panel -->
+      <ul class="collection"  style="padding:0; margin:0;"></ul>
+    </div>
+
+    <div class="col s9" style="padding:0; margin:0; max-height:1080px;">
+      <!-- Teal page content  -->
+      <nav>
+        <div class="nav-wrapper">
+          <div class="col s12">
+            <a href="#!" class="breadcrumb"><span id="modifyDate"></span></a>
+
+          </div>
+        </div>
+      </nav>
+
+      <textarea style="height:1000px;" class="textarea" width="100%" rows="1000" placeholder="새로운 메모를 입력해보세요^^"></textarea>
+    </div>
+
+    <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+      <a class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
+    </div>
+
+    <div class="preloader-wrapper big active" style="position:absolute; z-index:1000; left:50%; top:50%; display:none;">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--Import jQuery before materialize.js-->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyA1NPiFjdvpvaT3ZIEwriFYA6yhutix2Qg",
+    authDomain: "fir-58e47.firebaseapp.com",
+    databaseURL: "https://fir-58e47.firebaseio.com",
+    storageBucket: "fir-58e47.appspot.com",
+    messagingSenderId: "65867549867"
+  };
+  firebase.initializeApp(config);
+  var auth = firebase.auth();
+  var authProvider = new firebase.auth.GoogleAuthProvider();
+
+  auth.onAuthStateChanged(function(user){
+    if(user) {
+      console.log("success");
+      console.log(user);
+    } else {
+      console.log("fail");
+      console.log(user);
+      auth.signInWithPopup(authProvider);
+
+    }
+  });
+  </script>
+
+</body>
+</html>
