@@ -64,6 +64,8 @@
   <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
   <script>
   // Initialize Firebase
+  var autu, database;
+  var userInfo;
   var config = {
     apiKey: "AIzaSyA1NPiFjdvpvaT3ZIEwriFYA6yhutix2Qg",
     authDomain: "fir-58e47.firebaseapp.com",
@@ -72,20 +74,76 @@
     messagingSenderId: "65867549867"
   };
   firebase.initializeApp(config);
-  var auth = firebase.auth();
+  auth = firebase.auth();
+  database = firebase.database();
   var authProvider = new firebase.auth.GoogleAuthProvider();
 
   auth.onAuthStateChanged(function(user){
     if(user) {
       console.log("success");
       console.log(user);
+      userInfo = user;
+      get_memo_list();
+
     } else {
       console.log("fail");
       console.log(user);
       auth.signInWithPopup(authProvider);
-
     }
   });
+
+  function get_memo_list() {
+    console.log(userInfo.uid);
+    var memoRef = database.ref('memos/' + userInfo.uid);
+    memoRef.on('child_added', on_child_added);
+  }
+
+
+  function on_child_added(data) {
+    console.log(data.val());
+    var key = data.key;
+    var memoData = data.val();
+    var txt = memoData.txt;
+    var title = txt.substr(0,5);
+    var firstTxt = txt.substr(0,1);
+    var html =
+         "<li id='"+key+"' class=\"collection-item avatar\" onclick=\"fn_get_data_one(this.id);\" >" +
+         "<i class=\"material-icons circle red\">" + firstTxt + "</i>" +
+         "<span class=\"title\">" + title + "</span>" +
+         "<p class='txt'>" + txt + "<br>" +
+         "</p>" +
+         "</li>";
+    $(".collection").append(html);
+  }
+
+  $(".fixed-action-btn").click(function(){
+    save_data();
+  });
+  /*
+  $(function(){
+      $(".textarea").blur(function() {
+        save_data();
+      });
+  });
+  */
+  function fn_get_data_one(key) {
+    var memoRef = database.ref('memos/' + userInfo.uid + "/" + key)
+    .once('value').then(function(snapshot) {
+      $(".textarea").val(snapshot.val().txt);
+    })
+  }
+
+  function save_data() {
+    var memoRef = database.ref('memos/' + userInfo.uid);
+    var txt = $(".textarea").val();
+    if (txt =="") return;
+
+    memoRef.push({
+      txt: txt,
+      createDate: new Date().getTime()
+    });
+  }
+
   </script>
 
 </body>
