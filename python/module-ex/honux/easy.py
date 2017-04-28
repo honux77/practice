@@ -1,5 +1,6 @@
 import random
-def rand(max):
+
+def randMax(max):
     return random.randint(0,max)
 
 def doubleRandom():

@@ -1,7 +1,7 @@
-import hoyoung
+from honux import easy
 def main():
-    print(hoyoung.rand(100))
-    print(hoyoung.doubleRandom())
+    print(easy.randMax(100))
+    print(easy.doubleRandom())
 
 if __name__ == '__main__':
     main()
