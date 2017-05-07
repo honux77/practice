@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<body>
+		<div>
+			<h1>메모 쓰기</h1>
+      <form action="" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="글쓰기" />
+  </form>
+		</div>
+	</body>
+</html>

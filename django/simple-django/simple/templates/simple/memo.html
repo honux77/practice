@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<body>
+		<div>
+			<h1>메모장</h1>
+      <table>
+        <tr> <th>작성자</th> <th>내용</th> <th>날짜</th> </tr>
+        {% for memo in memos %}
+        <tr> <td>{{memo.name}}</td> <td>{{memo.text}}</td> <th>{{memo.published_date}}</th> </tr>
+        {% endfor %}
+      </table>
+      <p>
+        <a href="{% url 'new'%}">메모 추가하기</a>
+      </p>
+		</div>
+	</body>
+</html>
