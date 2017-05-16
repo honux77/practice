@@ -40,3 +40,6 @@ __pycache__/
 
 # Node
 node_moudules/
+
+# honux
+.ipynb_checkpoints/
