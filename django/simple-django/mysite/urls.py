@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.http import HttpResponse
+
 from simple import views
 
 urlpatterns = [
@@ -22,5 +24,5 @@ urlpatterns = [
     url(r'^hello/', views.hello),
     url(r'^memo/$', views.memo, name='board'),
     url(r'^memo/write/$', views.Write.as_view(), name='new'),
-
+    url(r'^$', views.memo),
 ]
