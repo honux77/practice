@@ -39,7 +39,10 @@ target/
 __pycache__/
 
 # Node
-node_moudules/
+node_modules/
+
+# Rails
+bin/
 
 # honux
 .ipynb_checkpoints/
