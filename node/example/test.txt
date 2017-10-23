@@ -1,2 +1,6 @@
-Hello, wrold
-this is sample text file
+5
+100
+200
+300
+400
+500

@@ -21,8 +21,9 @@ function readLine() {
 /////////////// ignore above this line ////////////////////
 
 function main() {
-    arr = readLine().split(' ');
-    arr = arr.map(Number);
-    console.log(arr);
-
+  var n = parseInt(readLine());
+  console.log(n);
+  for (var i = 0; i < n; i ++) {
+    console.log(readLine());
+  }
 }
