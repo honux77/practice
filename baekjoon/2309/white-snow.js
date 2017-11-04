@@ -15,22 +15,19 @@ for (var i = 0; i < 9; i++) {
 
 dwarves.sort(function(a, b) {return a - b;});
 
-var printValue = function(i1, i2) {
-	for (var i = 0; i < dwarves.length; i++) {
-		if (i === i1 || i === i2) {
-			continue;
+var main = function() {
+	for (var i = 0; i < 8; i++) {
+		for (var j = i + 1; j < 9; j++) {
+			var sum2 = sum - dwarves[i] - dwarves[j];
+			if (sum2 == 100) {
+				var t = dwarves[j];
+				dwarves.splice(i, 1);
+				dwarves.splice(dwarves.indexOf(t), 1);
+				console.log(dwarves.join(" "));
+				return;
+			}
 		}
-		console.log(dwarves[i]);
-		process.exit()
 	}
 }
 
-for (var i = 0; i < 8; i++) {
-	for (var j = i + 1; j < 9; j++) {
-		var sum2 = sum - dwarves[i] - dwarves[j];
-		if (sum2 == 100) {
-			printValue(i, j);
-			break;
-		}
-	}
-}
+main();
