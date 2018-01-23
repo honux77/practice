@@ -1,1 +1,7 @@
-print("1 2 3 4 5 6");
+import random
+
+a = range(1, 46)
+random.shuffle(a)
+mine = a[:6]
+mine.sort()
+print " ".join(str(i) for i in mine)
