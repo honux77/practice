@@ -1,42 +1,29 @@
 #include <stdio.h>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
 int main()
 {
     while(true) {
-        int n;
+        int n, prev;
         scanf("%d", &n);        
-        vector<int> arr(n + 1);
-	}
-	
-	
-	
-	
-	for (int i = 0; i < n; i++)
-	{
-		scanf("%d", &arr[i]);
-		pos[arr[i]] = i;
-	}
+        if (n == 0) {
+            break;
+        }
+        vector<int> arr(n);
 
-	for (int i = 0; i < n; i++)
-		scanf("%d", &res[i]);
+		for (int i = 0; i < n; i ++) {
+			scanf("%d", &arr[i]);
+		}
 
-	auto rev = res;
-	reverse(rev.begin(), rev.end());
-
-	int off = n - pos[res[0]];
-	int roff = off - 1;
-
-	rotate(rev.begin(), rev.begin() + roff, rev.end());
-	rotate(res.begin(), res.begin() + off, res.end());
-
-	if (arr == res || arr == rev)
-		printf("good puzzle\n");
-	else
-		printf("bad puzzle\n");
-
-	return 0;
+        prev = -1;
+        for (int i = 0; i < n; i++) {
+            if (prev != arr[i]) {
+                printf("%d ", arr[i]);
+                prev = arr[i];
+            }
+        }
+        printf("$\n");
+	}	
 }
