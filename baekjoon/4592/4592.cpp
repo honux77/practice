@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//https://www.acmicpc.net/problem/4592
 int main()
 {
     while(true) {
