@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+    p {
+        font-size: 20px;
+    }
+
+    button {
+        font-size: 20px;
+        margin: 10px;
+    }
+
+    #btns {
+        padding: 10px;
+    }
+</style>
+
+<body>
+    <h1>단어 맞추기 게임</h1>
+    <div>
+        <p id='word1'>HELLO</div>
+        <div id='word2'> </div>           
+        <div id='btns'>
+            <button id='swap' onclick='swap()'>뒤집기</button>
+            <button id='shift'onclick='shift()'>옮기기</button>
+        </div>
+        <p id='check'>일치하지 않습니다.</p>
+    </div>
+
+    <script>
+        var list = document.getElementById('word1').innerHTML.split('');
+        var word2 = document.getElementById('word2');
+        var btns = document.getElementById('btns');
+
+        btnList = [];
+        for (var i = 0; i < list.length; i++) {
+            var btn = document.createElement('button');
+            btn.innerHTML = list[i];
+            btnList.push(btn);
+            word2.appendChild(btn);
+        }
+        
+        var swap = function(event) {
+            console.log("swap");
+        };
+
+        var shift = function(event) {
+            console.log("shift");
+        };
+    </script>
+</body>
+
+</html>
