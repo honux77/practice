@@ -1,14 +1,12 @@
 // https://www.hackerrank.com/challenges/find-the-merge-point-of-two-joined-linked-lists/problem
 
-/*
-   Find merge point of two linked lists
-   Node is defined as
-   struct Node
-   {
-       int data;
-       Node* next;
-   }
-*/
+#include <iostream>
+
+struct Node
+{
+    int data;
+    Node* next;
+};
 
 Node* findSameNode(Node *headA, Node *headB) {    
     Node *currB = headB;
