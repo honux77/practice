@@ -43,7 +43,8 @@ Node* SortedInsert(Node *head, int data)
 
 void printList(Node *head) {
 	while (head != nullptr) {
-		std::cout << head->data;
+		std::cout << head->data << "->";
 		head = head->next;
 	}
+	std::cout << "END" << std::endl;
 }
