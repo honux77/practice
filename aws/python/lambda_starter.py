@@ -1,23 +1,21 @@
 import boto3
+import os
+
+def lambda_handler(event, context):
+    k = os.environ['key']
+    v = os.environ['value']
+    return stopInstances('ap-northeast-2', k, v)
+
 regionList=['ap-northeast-2']
 
 def findTag(instance, key, value):
     tags = instance.tags
-    target_tag = ""
     if tags is None:
-        print("No tags")
-        return True
-    # find tag value of key
-    for tag in tags:
-        if tag['Key'] == key: 
-            target_tag = tag['Value']
-            break
-    if target_tag in value:
-        print("{}: {}".format(key, target_tag))
-        return True
-    return False
+        return False        
+    tag_value = next((t['Value'] for t in tags if t['Key'] == key), None)
+    return tag_value == value 
 
-def startInstances(tag, value, region):
+def stopInstances(region, tag, value):
     targets = []
     print("region:", region)
     ec2 = boto3.resource('ec2', region)
@@ -30,7 +28,6 @@ def startInstances(tag, value, region):
         print("Target instance not found.")
     else:
         for instance in targets:
-            print("start {}".format(instance.instance_id))
+            print("Start {}".format(instance.instance_id))
             instance.start()
-
-startInstances('Environment', 'dev', 'ap-northeast-2')
+    return len(targets)
