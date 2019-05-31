@@ -1,14 +1,19 @@
-let count = 1;
-let end = 40;
+const seq = {
+	_cnt: 1,
+	get next() { return ++this._cnt; }
+}
 
 const move = () => {
-	console.clear();
-	count++;
+	let count = seq.next;
 	let space = "";
+	let space2= "";
+	const end = 40;
+
+	console.log(count);
+	console.clear();
 	for (let i = 0; i < count; i++) {
 		space += " ";
 	}
-	let space2= "";
 	for (let i = 0; i < end - count; i++) {
 		space2 += " ";
 	}
