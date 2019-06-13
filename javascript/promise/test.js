@@ -3,7 +3,7 @@ const mycall = function(callback) {
 	console.log("call mycall");
 }
 
-mycall(_=>{
+mycall(function() {
 	console.log("Micole!");
 });
 
@@ -14,7 +14,7 @@ const mycall2 = function() {
 	});
 };
 
-mycall2().then((resolvedData)=> {
+mycall2().then((resolvedData) => {
 	console.log(resolvedData);
 });
 
