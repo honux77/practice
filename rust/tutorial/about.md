@@ -1,12 +1,9 @@
 # Rust Tutorial
 
-https://rustwasm.github.io/book/game-of-life/hello-world.html
+- https://doc.rust-lang.org/book/title-page.html
 
-## why Learn
+## 학습내용
 
-I just want to build a simple webgame using wasm based on rust
-
-## Final Goal
-
-NES emulator using rust and wasm
+1. [x] hello world
+2. [x] hello cargo
 
