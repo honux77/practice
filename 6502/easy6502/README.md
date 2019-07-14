@@ -11,7 +11,7 @@ In this tiny ebook, the author shows you how to get started writing 6502 assembl
 ## TODO
 
 - [ ] Finish this
-- [ ] Read next book 
+- [ ] Read next book
 - [ ] Learn NES programming
 - [ ] Build simple nes game
 
