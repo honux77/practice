@@ -1,0 +1,3 @@
+[submodule "nes/hellomario"]
+	path = nes/hellomario
+	url = https://github.com/honux77/hellomario
