@@ -1,0 +1,14 @@
+{
+  "name": "jwt-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "jwt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
+}
