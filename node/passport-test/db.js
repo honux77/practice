@@ -7,6 +7,8 @@ class Db {
         if(this.users[username]) {
             return {username, password: this.users[username]};
         } else {
+            console.log(`[DB] no user: ${username}`);
+
             return;
         }
     }
