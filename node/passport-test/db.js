@@ -21,8 +21,4 @@ class Db {
     }
 };
 
-// const db = new Db();
-// db.save('honux', 1234);
-// console.log(db.find('honux'));
-
 module.exports = new Db();
