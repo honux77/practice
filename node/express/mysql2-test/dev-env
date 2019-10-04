@@ -1,0 +1,4 @@
+DB_USER=honux
+DB_PASSWORD=password
+DB_HOST=dbhost
+DB_DATABASE=honuxdb
