@@ -3,17 +3,17 @@
 ## local variable type inference
 
 - java10부터 지역변수에 var 키워드를 사용해서 타입 추론 가능
-- var로 선언된 변수의 타입을 중간에 바꿀 수 없다. 
+- var로 선언된 변수의 타입을 중간에 바꿀 수 없다.
+- var는 지역 변수에서만 사용할 수 있다.
 
 ```java
 public void do() {
-	 var i = 1;
-	 var b = 2.5;
-	 System.out.println(i + b);
+    var i = 1;
+    var b = 2.5;
+    System.out.println(i + b);
 }
 ```
 
-## log
+## 2의 보수 표기법
 
-start/end date: 2018.12.6
-
+- 책 내용에 오류가 있다.
