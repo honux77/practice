@@ -14,6 +14,20 @@ public void do() {
 }
 ```
 
+## 타입 추론
+
+- java9부터 사용 가능
+- 지역변수 한정
+
+```java
+public void foo() {
+    var i = 10;
+    var b = 3.5;
+    System.out.println(i + b);
+}
+```
+
 ## 2의 보수 표기법
 
 - 책 내용에 오류가 있다.
+- 모리스 마노 컴구조 참고할 것
