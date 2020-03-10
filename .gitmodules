@@ -1,3 +1,6 @@
 [submodule "nes/hellomario"]
 	path = nes/hellomario
 	url = https://github.com/honux77/hellomario
+[submodule "java/dipendency-injection"]
+	path = java/dipendency-injection
+	url = https://github.com/honux77/java-di-study
