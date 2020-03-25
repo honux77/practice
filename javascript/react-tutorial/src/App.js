@@ -4,7 +4,7 @@ import { Subject, Article } from './Components';
 function App() {
   return (
     <div className="App">
-      <Subject></Subject>
+      <Subject title="찢어진 바지" author="스폰지밥"></Subject>
       <Article></Article>
 
     </div>

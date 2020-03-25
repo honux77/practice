@@ -5,7 +5,7 @@ class Subject extends Component {
         return (
             <header>
             <h1>리액트로 놀아보자.</h1>
-            <h2>찢어진 바지 by 스폰지밥</h2>
+            <h2>{this.props.title} by {this.props.author}</h2>
             </header>
         )
     }
