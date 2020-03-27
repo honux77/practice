@@ -27,10 +27,15 @@ class Contents extends Component {
             case "bad":
                 return song;
             default:
-                return friends;
-        }
-
-       
+                return (
+                    <article>
+                        <h2>스폰지 밥의 친구들</h2>
+                        <ul>
+                        {friends}
+                        </ul>
+                    </article>
+                );
+        }       
     }
 }
 
