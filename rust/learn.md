@@ -19,8 +19,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## rust tutorial
 
 - https://doc.rust-lang.org/book/
-- https://doc.rust-lang.org/book/ch01-02-hello-world.html
-
+- [Hello, World](https://doc.rust-lang.org/book/ch01-02-hello-world.html)
+- [Hello, Cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)
 
 ## wasm tutorial: game of life
 
