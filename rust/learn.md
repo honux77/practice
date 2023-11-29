@@ -1,8 +1,20 @@
-# Learn rust
+# Learn Rust
 
-## getting-started
+https://www.rust-lang.org/
 
-- https://www.rust-lang.org/learn/get-started
+## Install
+
+https://www.rust-lang.org/tools/install
+
+### Windows
+
+- 윈도우에서는 그냥 다운로드 받아서 설치하면 된다.
+
+### WSL
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
 ## rust tutorial
 
