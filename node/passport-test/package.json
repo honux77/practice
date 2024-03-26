@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "cookie-parser": "^1.4.4",
-    "express": "^4.17.1",
+    "express": "^4.19.2",
     "express-session": "^1.16.2",
     "mocha": "^6.2.0",
     "morgan": "^1.9.1",
