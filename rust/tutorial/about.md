@@ -4,6 +4,5 @@
 
 ## 학습내용
 
-1. [x] hello world
-2. [x] hello cargo
+1. [x] hello world (2024-10-15)
 
