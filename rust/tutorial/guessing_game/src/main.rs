@@ -15,7 +15,7 @@ fn main() {
 
     while tries < max_tries {
         tries += 1;
-        println!("시도 {tries}: 숫자를 입력해 주세요...");        
+        println!("시도 {tries}: 숫자를 입력해 주세요: ");        
 
         let mut guess = String::new();
 
@@ -31,7 +31,7 @@ fn main() {
             }
         };        
 
-        println!("입력한 숫자: {guess}...");
+        println!("입력한 숫자: {guess}");
 
         match guess.cmp(&secret_number) {
             Ordering::Less => println!("작군요!"),
@@ -39,8 +39,7 @@ fn main() {
             Ordering::Equal => {
                 println!("정답!");
                 suceeded = true;
-                lucky_point = min(lucky_point + 40 * tries / max_tries, 100);
-                
+                lucky_point = min(lucky_point + 40 * tries / max_tries, 100);                
                 break;
             }
         }
