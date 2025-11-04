@@ -1,4 +1,6 @@
-use std::io;
+// winner.rs
+
+use std::io::{self, Write};
 use rand::Rng;
 
 fn main() {
